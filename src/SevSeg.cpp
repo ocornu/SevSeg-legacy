@@ -179,6 +179,16 @@ void SevSeg::SetBrightness(byte percentBright)
 	brightnessDelay = map(percentBright, 0, 100, 0, FRAMEPERIOD); //map brightnessDelay to 0 to the max which is framePeriod
 }
 
+void SevSeg::display(byte segments) {
+	// Each bit turns on a single segment (from A-to-G)
+	if (segments & (1<<6)) digitalWrite(segmentA, SegOn);
+	if (segments & (1<<5)) digitalWrite(segmentB, SegOn);
+	if (segments & (1<<4)) digitalWrite(segmentC, SegOn);
+	if (segments & (1<<3)) digitalWrite(segmentD, SegOn);
+	if (segments & (1<<2)) digitalWrite(segmentE, SegOn);
+	if (segments & (1<<1)) digitalWrite(segmentF, SegOn);
+	if (segments & (1<<0)) digitalWrite(segmentG, SegOn);
+}
 
 //Refresh Display
 /*******************************************************************************************/
@@ -213,27 +223,12 @@ void SevSeg::DisplayString(char* toDisplay, byte DecAposColon)
 		//displayCharacter(toDisplay[digit-1]); //Now display this digit
 		// displayArray (defined in SevSeg.h) decides which segments are turned on for each number or symbol
 		char characterToDisplay = toDisplay[digit-1];
-		if (characterToDisplay & 0x80)	// bit 7 enables bit-per-segment control
-		{	// Each bit of characterToDisplay turns on a single segment (from A-to-G)
-			if (characterToDisplay & 0x01) digitalWrite(segmentA, SegOn);
-			if (characterToDisplay & 0x02) digitalWrite(segmentB, SegOn);
-			if (characterToDisplay & 0x04) digitalWrite(segmentC, SegOn);
-			if (characterToDisplay & 0x08) digitalWrite(segmentD, SegOn);
-			if (characterToDisplay & 0x10) digitalWrite(segmentE, SegOn);
-			if (characterToDisplay & 0x20) digitalWrite(segmentF, SegOn);
-			if (characterToDisplay & 0x40) digitalWrite(segmentG, SegOn);
-		}
-		else
+		if (!(characterToDisplay & 1<<7))	// bit 7 enables bit-per-segment control
 		{
-			const uint8_t chr = pgm_read_byte(&characterArray[characterToDisplay]);
-			if (chr & (1<<6)) digitalWrite(segmentA, SegOn);
-			if (chr & (1<<5)) digitalWrite(segmentB, SegOn);
-			if (chr & (1<<4)) digitalWrite(segmentC, SegOn);
-			if (chr & (1<<3)) digitalWrite(segmentD, SegOn);
-			if (chr & (1<<2)) digitalWrite(segmentE, SegOn);
-			if (chr & (1<<1)) digitalWrite(segmentF, SegOn);
-			if (chr & (1<<0)) digitalWrite(segmentG, SegOn);
+			characterToDisplay = pgm_read_byte(&characterArray[characterToDisplay]);
 		}
+		display(characterToDisplay);
+
 		//Service the decimal point, apostrophe and colon
 		if ((DecAposColon & (1<<(digit-1))) && (digit < 5)) //Test DecAposColon to see if we need to turn on a decimal point
 			digitalWrite(segmentDP, SegOn);

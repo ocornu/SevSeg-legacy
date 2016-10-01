@@ -178,7 +178,7 @@ public:
 
 private:
   //Private Functions
-  void displayCharacter(byte characterToDisplay); //Illuminates the correct segments
+  void display(byte segments); //Illuminates the correct segments
   void SplitNumber(int);
 
   //Private Variables
